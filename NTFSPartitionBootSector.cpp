@@ -1,7 +1,6 @@
-#include <windows.h>
-#include <stdio.h>
-#include <iostream>
-#include <iomanip>
+#include "ReadSector.h"
+#include "NTFSPartitionBootSector.h"
+
 using namespace std;
 
 void subB(BYTE sector[], int x, int y) {
@@ -10,7 +9,7 @@ void subB(BYTE sector[], int x, int y) {
     cout << endl; 
 }
 
-void subB_i(BYTE sector[], int x, int y) {
+void subB_dec(BYTE sector[], int x, int y) {
     int result = 0;
     for (int i = y; i >= x; --i)
         result = (result << 8) | sector[i];
@@ -35,52 +34,52 @@ void asNTFS(BYTE s[512]) {
     subB(s, 0x03, 0x0a);
 
     cout << "Bytes per sector: ";
-    subB_i(s, 0x0b, 0x0c);
+    subB_dec(s, 0x0b, 0x0c);
 
     cout << "Sectors per cluster: ";
-    subB_i(s, 0x0d, 0x0d);
+    subB_dec(s, 0x0d, 0x0d);
 
     cout << "Reserved sectors: ";
-    subB_i(s, 0x0e, 0x0f);
+    subB_dec(s, 0x0e, 0x0f);
 
     cout << "(always zero): ";
-    subB_i(s, 0x10, 0x12);
+    subB_dec(s, 0x10, 0x12);
 
     cout << "Media descriptor: ";
-    subB_i(s, 0x15, 0x15);
+    subB_dec(s, 0x15, 0x15);
 
     cout << "Sectors per track: ";
-    subB_i(s, 0x18, 0x19);
+    subB_dec(s, 0x18, 0x19);
 
     cout << "Number of heads: ";
-    subB_i(s, 0x1A, 0x1B);
+    subB_dec(s, 0x1A, 0x1B);
 
     cout << "Hidden sectors: ";
-    subB_i(s, 0x1C, 0x1F);
+    subB_dec(s, 0x1C, 0x1F);
 
     cout << "Signature: ";
     subB_hex(s, 0x24, 0x27);
 
     cout << "Total sectors: ";
-    subB_i(s, 0x28, 0x2f);
+    subB_dec(s, 0x28, 0x2f);
 
     cout << "$MFT logical cluster number: ";
-    subB_i(s, 0x30, 0x37);
+    subB_dec(s, 0x30, 0x37);
 
     cout << "$MFTMirr logical cluster number: ";
-    subB_i(s, 0x38, 0x3f);
+    subB_dec(s, 0x38, 0x3f);
 
     cout << "Clusters per File Record Segment: ";
-    subB_i(s, 0x40, 0x43);
+    subB_dec(s, 0x40, 0x43);
 
     cout << "Clusters per Index Buffer: ";
-    subB_i(s, 0x44, 0x47);
+    subB_dec(s, 0x44, 0x47);
 
     cout << "Volume serial number: ";
     subB_hex(s, 0x48, 0x4f);
 
     cout << "Checksum: ";
-    subB_i(s, 0x50, 0x53);
+    subB_dec(s, 0x50, 0x53);
 
     //cout << "Boostrap code: ";
     //subB_hex(s, 0x54, 0x1FD);
@@ -89,38 +88,10 @@ void asNTFS(BYTE s[512]) {
     subB_hex(s, 0x1FE, 0x1FF);
 }
 
-int ReadSector(LPCWSTR  drive, int readPoint, BYTE sector[512])
-{
-    int retCode = 0;
-    DWORD bytesRead;
-    HANDLE device = NULL;
-
-    device = CreateFile(drive,    // Drive to open
-        GENERIC_READ,           // Access mode
-        FILE_SHARE_READ | FILE_SHARE_WRITE,        // Share Mode
-        NULL,                   // Security Descriptor
-        OPEN_EXISTING,          // How to create
-        0,                      // File attributes
-        NULL);                  // Handle to template
-
-    if (device == INVALID_HANDLE_VALUE) // Open Error
-    {
-        printf("CreateFile: %u\n", GetLastError());
-        return 1;
-    }
-
-    SetFilePointer(device, readPoint, NULL, FILE_BEGIN); //Set a Point to Read
-
-    if (!ReadFile(device, sector, 512, &bytesRead, NULL))
-        printf("ReadFile: %u\n", GetLastError());
-    else
-        printf("Success!\n");
-}
-
 int main(int argc, char** argv)
 {
     BYTE sector[512];
-    ReadSector(L"\\\\.\\F:", 0, sector);
+    ReadSector(L"\\\\.\\J:", 0, sector);
 
      /* TEST CASE
         BYTE sector[512] = { 
